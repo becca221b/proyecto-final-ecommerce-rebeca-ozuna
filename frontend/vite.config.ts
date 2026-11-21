@@ -4,4 +4,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    allowedHosts: ['sb-6nu5vgywbln1.vercel.run'],
+  },
 })
