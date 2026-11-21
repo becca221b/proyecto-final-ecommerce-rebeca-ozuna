@@ -1,24 +1,17 @@
 import { useState } from 'react'
-import useSWR from 'swr'
 import { Menu } from 'lucide-react'
-import { api } from './api'
 import { Sidebar, type Section } from './components/Sidebar'
 import { ArticlesPage } from './pages/ArticlesPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { OrdersPage } from './pages/OrdersPage'
-
-const sectionNames: Record<Section, string> = { dashboard: 'Resumen', articulos: 'Artículos', categorias: 'Categorías', ordenes: 'Órdenes' }
+import { ProductsPage } from './pages/ProductsPage'
 
 function App() {
-  const [active, setActive] = useState<Section>('dashboard')
-  const [collapsed, setCollapsed] = useState(false)
+  const [active, setActive] = useState<Section>('inicio')
   const [mobileOpen, setMobileOpen] = useState(false)
-  useSWR('articles', api.getArticulos)
-  useSWR('categories', api.getCategorias)
-  useSWR('orders', api.getOrdenes)
 
-  return <div className="app-shell min-h-screen"><Sidebar active={active} onChange={(section) => { setActive(section); setMobileOpen(false) }} collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} mobileOpen={mobileOpen} /><div className="main-area"><header className="topbar"><div className="topbar-location"><button className="mobile-menu" type="button" onClick={() => setMobileOpen((value) => !value)} aria-label="Abrir navegación"><Menu /></button><span>Panel</span><b>/</b><strong>{sectionNames[active]}</strong></div><div className="api-indicator"><span className="connection-dot" /><strong>REST API</strong><span>· {import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}</span></div></header><main className="page-content" key={active}>{active === 'dashboard' && <DashboardPage onNavigate={setActive} />}{active === 'articulos' && <ArticlesPage />}{active === 'categorias' && <CategoriesPage />}{active === 'ordenes' && <OrdersPage />}</main><footer className="app-footer"><span>Mercado · Gestión de inventario</span><span>API REST · {import.meta.env.VITE_API_BASE_URL || 'localhost:8080'}</span></footer></div></div>
+  return <div className="app-shell"><header className="topbar"><a className="brand" href="#inicio" onClick={(event) => { event.preventDefault(); setActive('inicio') }}><span className="brand-mark">m.</span><span className="brand-copy"><strong>mercado</strong><small>COMMERCE WORKSPACE</small></span></a><button className="mobile-menu" type="button" onClick={() => setMobileOpen((value) => !value)} aria-label="Abrir navegación"><Menu /></button><Sidebar active={active} onChange={(section) => { setActive(section); setMobileOpen(false) }} mobileOpen={mobileOpen} /><div className="api-indicator"><span className="connection-dot" /><strong>Conectado</strong><span>Spring API</span></div></header><main className="page-content" key={active}>{active === 'inicio' && <DashboardPage onNavigate={setActive} />}{active === 'articulos' && <ArticlesPage />}{active === 'categorias' && <CategoriesPage />}{active === 'productos' && <ProductsPage onManage={() => setActive('articulos')} />}{active === 'ordenes' && <OrdersPage />}</main><footer className="app-footer"><span>mercado · Espacio comercial</span><span>API REST · {import.meta.env.VITE_API_BASE_URL || 'localhost:8080'}</span></footer></div>
 }
 
 export default App
