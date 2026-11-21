@@ -15,6 +15,7 @@ import com.rebeca.articulo_api.repository.OrdenRepository;
 import com.rebeca.articulo_api.service.ItemOrden;
 import com.rebeca.articulo_api.service.OrdenService;
 import com.rebeca.articulo_api.utils.exceptions.ArticuloNoEncontradoException;
+import com.rebeca.articulo_api.utils.exceptions.DetalleOrdenNoEncontradoException;
 import com.rebeca.articulo_api.utils.exceptions.OrdenNoEncontradaException;
 import com.rebeca.articulo_api.utils.exceptions.StockInsuficienteException;
 
@@ -58,6 +59,47 @@ public class OrdenServiceImpl implements OrdenService {
         List<DetalleOrden> nuevosDetalles = crearDetallesYDescontarStock(items);
         orden.actualizar(nuevosDetalles, fecha == null ? orden.getFecha() : fecha);
         return ordenRepository.save(orden);
+    }
+
+    @Override
+    @Transactional(rollbackFor = StockInsuficienteException.class)
+    public Orden actualizarDetalleOrden(Long ordenId, Long detalleId, int cantidad)
+            throws StockInsuficienteException {
+        Orden orden = obtenerOrdenPorId(ordenId);
+        DetalleOrden detalle = obtenerDetalleOrden(orden, detalleId);
+        int diferencia = cantidad - detalle.getCantidad();
+        Articulo articulo = detalle.getArticulo();
+
+        if (diferencia > 0) {
+            articulo.restarStock(diferencia);
+            articuloRepository.save(articulo);
+        } else if (diferencia < 0) {
+            articulo.ingresarStock(-diferencia);
+            articuloRepository.save(articulo);
+        }
+
+        detalle.actualizarCantidad(cantidad);
+        return ordenRepository.save(orden);
+    }
+
+    @Override
+    @Transactional
+    public void eliminarDetalleOrden(Long ordenId, Long detalleId) {
+        Orden orden = obtenerOrdenPorId(ordenId);
+        DetalleOrden detalle = obtenerDetalleOrden(orden, detalleId);
+        Articulo articulo = detalle.getArticulo();
+
+        articulo.ingresarStock(detalle.getCantidad());
+        articuloRepository.save(articulo);
+        orden.getDetalles().remove(detalle);
+        ordenRepository.save(orden);
+    }
+
+    private DetalleOrden obtenerDetalleOrden(Orden orden, Long detalleId) {
+        return orden.getDetalles().stream()
+            .filter(detalle -> detalleId.equals(detalle.getId()))
+            .findFirst()
+            .orElseThrow(() -> new DetalleOrdenNoEncontradoException(detalleId));
     }
 
     private List<DetalleOrden> crearDetallesYDescontarStock(List<ItemOrden> items)

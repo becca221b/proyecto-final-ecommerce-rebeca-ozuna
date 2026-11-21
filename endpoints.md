@@ -143,6 +143,8 @@ La búsqueda por nombre no distingue mayúsculas y devuelve la primera coinciden
 | `GET` | `/api/ordenes/{id}` | Devuelve una orden con sus detalles. |
 | `POST` | `/api/ordenes` | Crea una orden y descuenta el stock de sus artículos. |
 | `PUT` | `/api/ordenes/{id}` | Reemplaza los detalles y ajusta el stock. |
+| `PATCH` | `/api/ordenes/{ordenId}/detalles/{detalleId}` | Actualiza la cantidad de un detalle y ajusta el stock. |
+| `DELETE` | `/api/ordenes/{ordenId}/detalles/{detalleId}` | Elimina un detalle y devuelve su stock. |
 
 Ejemplo de cuerpo para `POST` o `PUT`:
 
@@ -165,3 +167,19 @@ Ejemplo de cuerpo para `POST` o `PUT`:
 `fecha` es opcional: al crear la orden, si se omite, se usa la fecha actual; al actualizar, se conserva la fecha existente. `detalles` debe contener al menos un elemento. Cada `articuloId` y `cantidad` debe ser mayor que cero.
 
 `POST` devuelve `201 Created`; `PUT` devuelve `200 OK`. En ambos casos, si algún artículo no existe, la respuesta es `404 Not Found`; si el stock no alcanza, devuelve `409 Conflict` y no se guardan cambios parciales. Al actualizar, primero se devuelve al stock lo reservado por la orden anterior y luego se descuenta el nuevo detalle, todo dentro de una transacción. No se expone un endpoint para eliminar órdenes.
+
+### `PATCH /api/ordenes/{ordenId}/detalles/{detalleId}`
+
+Actualiza únicamente la cantidad del detalle indicado. El artículo del detalle no cambia. El cuerpo debe contener una cantidad mayor que cero:
+
+```json
+{
+  "cantidad": 3
+}
+```
+
+Si la nueva cantidad es mayor que la anterior, se descuenta del stock la diferencia; si es menor, se devuelve la diferencia. Si la cantidad es la misma, el stock no cambia. Devuelve `200 OK` con la orden actualizada. Si la orden o el detalle no existen, o el detalle no pertenece a esa orden, devuelve `404 Not Found`; si la cantidad no es válida, devuelve `400 Bad Request`; si no hay stock suficiente para aumentar la cantidad, devuelve `409 Conflict` y no se guardan cambios parciales.
+
+### `DELETE /api/ordenes/{ordenId}/detalles/{detalleId}`
+
+Elimina el detalle indicado de la orden y devuelve al stock del artículo la cantidad que tenía reservada. Devuelve `204 No Content`. Si la orden o el detalle no existen, o el detalle no pertenece a esa orden, devuelve `404 Not Found`.

@@ -11,4 +11,6 @@ public interface OrdenService {
     Orden obtenerOrdenPorId(Long id);
     List<Orden> obtenerTodasLasOrdenes();
     Orden actualizarOrden(Long id, List<ItemOrden> items, LocalDate fecha) throws StockInsuficienteException;
+    Orden actualizarDetalleOrden(Long ordenId, Long detalleId, int cantidad) throws StockInsuficienteException;
+    void eliminarDetalleOrden(Long ordenId, Long detalleId);
 }

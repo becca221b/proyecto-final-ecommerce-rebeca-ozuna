@@ -16,6 +16,7 @@ import com.rebeca.articulo_api.dto.ApiError;
 import com.rebeca.articulo_api.dto.ApiValidationError;
 import com.rebeca.articulo_api.utils.exceptions.ArticuloNoEncontradoException;
 import com.rebeca.articulo_api.utils.exceptions.CategoriaNoEncontradaException;
+import com.rebeca.articulo_api.utils.exceptions.DetalleOrdenNoEncontradoException;
 import com.rebeca.articulo_api.utils.exceptions.OrdenNoEncontradaException;
 import com.rebeca.articulo_api.utils.exceptions.StockInsuficienteException;
 
@@ -37,7 +38,7 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler({CategoriaNoEncontradaException.class, OrdenNoEncontradaException.class})
+    @ExceptionHandler({CategoriaNoEncontradaException.class, OrdenNoEncontradaException.class, DetalleOrdenNoEncontradoException.class})
     public ResponseEntity<String> manejarRecursoNoEncontrado(RuntimeException exception) {
         return ResponseEntity.notFound().build();
     }

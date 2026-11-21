@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rebeca.articulo_api.dto.ActualizarDetalleOrdenRequest;
 import com.rebeca.articulo_api.dto.DetalleOrdenRequest;
 import com.rebeca.articulo_api.dto.OrdenRequest;
 import com.rebeca.articulo_api.model.Orden;
@@ -54,6 +57,23 @@ public class OrdenController {
             @PathVariable Long id,
             @Valid @RequestBody OrdenRequest request) throws StockInsuficienteException {
         return ordenService.actualizarOrden(id, convertirItems(request.detalles()), request.fecha());
+    }
+
+    @PatchMapping("/{ordenId}/detalles/{detalleId}")
+    public Orden actualizarDetalle(
+            @PathVariable Long ordenId,
+            @PathVariable Long detalleId,
+            @Valid @RequestBody ActualizarDetalleOrdenRequest request)
+            throws StockInsuficienteException {
+        return ordenService.actualizarDetalleOrden(ordenId, detalleId, request.cantidad());
+    }
+
+    @DeleteMapping("/{ordenId}/detalles/{detalleId}")
+    public ResponseEntity<Void> eliminarDetalle(
+            @PathVariable Long ordenId,
+            @PathVariable Long detalleId) {
+        ordenService.eliminarDetalleOrden(ordenId, detalleId);
+        return ResponseEntity.noContent().build();
     }
 
     private List<ItemOrden> convertirItems(List<DetalleOrdenRequest> detalles) {

@@ -39,6 +39,13 @@ public class DetalleOrden {
         return cantidad;
     }
 
+    public void actualizarCantidad(int cantidad) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+        }
+        this.cantidad = cantidad;
+    }
+
     // Ver en qué capa va este método
     public double calcularSubtotal() {
         return articulo.getPrecio() * cantidad;
